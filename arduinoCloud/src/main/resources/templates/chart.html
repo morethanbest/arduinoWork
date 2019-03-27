@@ -8,29 +8,77 @@
 
 <body style="height: 100%; margin: 0">
 <div id="container" style="height: 100%"></div>
-<script type="text/javascript" src="../static/echarts.simple.min.js"></script>
-<script type="text/javascript" src="../static/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="echarts.simple.min.js"></script>
+<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
 <script type="text/javascript">
     var dom = document.getElementById("container");
     var myChart = echarts.init(dom);
     option = null;
 
-    function randomData(val) {
+    function randomData() {
         var now = new Date();
-        var value = $.ajax(
-            
-        );
-        var valueName = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate() + ' ' + (now.getHours() >= 10 ? now.getHours() : '0' + now.getHours()) + ':' + (now.getMinutes() >= 10 ? now.getMinutes() : '0' + now.getMinutes());
-        //+ ':' + (now.getSeconds() >= 10 ? now.getSeconds() : '0' + now.getSeconds())
-        return {
-            name: now.toString(),
-            value: [
-                valueName,
-                Math.round(value)
-            ]
-        }
+        $.ajax({
+            type:"GET",
+            url:"/update?name=l",
+            dataType:"text",
+            success: function(v){
+                var valueName = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate() + ' ' + (now.getHours() >= 10 ? now.getHours() : '0' + now.getHours()) + ':' + (now.getMinutes() >= 10 ? now.getMinutes() : '0' + now.getMinutes())+ ':' + (now.getSeconds() >= 10 ? now.getSeconds() : '0' + now.getSeconds());
+                var newData = {
+                    name: now.toString(),
+                    value: [
+                        valueName,
+                        Math.round(v)
+                    ]
+                };
+                data.push(newData);
+                if(data.length > num)
+                    data.shift();
+                myChart.setOption({
+                    series: [{
+                        data: data
+                    },{
+                        data: dataT
+                    }]
+                });
+            },
+            error:function(jqXHR){
+                alert("发生错误");
+            }
+        });
+        $.ajax({
+            type:"GET",
+            url:"/update?name=t",
+            dataType:"text",
+            success: function(v){
+                var valueName = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate() + ' ' + (now.getHours() >= 10 ? now.getHours() : '0' + now.getHours()) + ':' + (now.getMinutes() >= 10 ? now.getMinutes() : '0' + now.getMinutes())+ ':' + (now.getSeconds() >= 10 ? now.getSeconds() : '0' + now.getSeconds());
+                var newData = {
+                    name: now.toString(),
+                    value: [
+                        valueName,
+                        Math.round(v)
+                    ]
+                };
+                dataT.push(newData);
+                if(dataT.length > num)
+                    dataT.shift();
+                myChart.setOption({
+                    series: [{
+                        data: data
+                    },{
+                        data:dataT
+                    }]
+                });
+            },
+            error:function(jqXHR){
+                alert("发生错误");
+            }
+        });
+
+        //
+
     }
     var data = [];
+    var dataT = [];
 
     var num = 120;
     option = {
@@ -51,32 +99,42 @@
                 show: false
             }
         },
-        yAxis: {
+        yAxis: [{
+            name: '光强度',
             type: 'value',
+            max: 1000,
+            min: 0,
             boundaryGap: [0, '100%'],
             splitLine: {
                 show: false
             }
-        },
+        },{
+            name: '温度',
+            type: 'value',
+            max: 50,
+            min: 0,
+            boundaryGap: [0, '100%'],
+            splitLine: {
+                show: false
+            }
+        }],
         series: [{
             name: '光强度数据',
             type: 'line',
-            showSymbol: false,
-            hoverAnimation: false,
+            showSymbol: true,
+            yAxisIndex: 0,
+            hoverAnimation: true,
             data: data
+        },{
+            name: '温度度数据',
+            type: 'line',
+            showSymbol: true,
+            yAxisIndex: 1,
+            hoverAnimation: true,
+            data: dataT
         }]
     };
-    setInterval(function() {
-        if(data.length >= num)
-            data.shift();
-        data.push(randomData());
-
-        myChart.setOption({
-            series: [{
-                data: data
-            }]
-        });
-    }, 1000);
+    setInterval(randomData, 2000);
     if (option && typeof option === "object") {
         myChart.setOption(option, true);
     }

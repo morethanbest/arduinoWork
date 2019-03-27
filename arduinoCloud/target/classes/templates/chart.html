@@ -1,40 +1,144 @@
 <!DOCTYPE html>
-<html>
+<html style="height: 100%">
+
 <head>
     <meta charset="utf-8">
-    <title>ECharts</title>
-    <!-- 引入 echarts.js -->
-    <script src="../static/echarts.simple.min.js"></script>
+    <title>每分钟更新</title>
 </head>
-<body>
-<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
-<div id="main" style="width: 600px;height:400px;"></div>
-<script type="text/javascript">
-    // 基于准备好的dom，初始化echarts实例
-    var myChart = echarts.init(document.getElementById('main'));
 
-    // 指定图表的配置项和数据
-    var option = {
-        title: {
-            text: 'ECharts 入门示例'
-        },
-        tooltip: {},
-        legend: {
-            data:['销量']
+<body style="height: 100%; margin: 0">
+<div id="container" style="height: 100%"></div>
+<script type="text/javascript" src="echarts.simple.min.js"></script>
+<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+<script type="text/javascript">
+    var dom = document.getElementById("container");
+    var myChart = echarts.init(dom);
+    option = null;
+
+    function randomData() {
+        var now = new Date();
+        $.ajax({
+            type:"GET",
+            url:"/update?name=l",
+            dataType:"text",
+            success: function(v){
+                var valueName = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate() + ' ' + (now.getHours() >= 10 ? now.getHours() : '0' + now.getHours()) + ':' + (now.getMinutes() >= 10 ? now.getMinutes() : '0' + now.getMinutes())+ ':' + (now.getSeconds() >= 10 ? now.getSeconds() : '0' + now.getSeconds());
+                var newData = {
+                    name: now.toString(),
+                    value: [
+                        valueName,
+                        Math.round(v)
+                    ]
+                };
+                data.push(newData);
+                if(data.length > num)
+                    data.shift();
+                myChart.setOption({
+                    series: [{
+                        data: data
+                    },{
+                        data: dataT
+                    }]
+                });
+            },
+            error:function(jqXHR){
+                alert("发生错误");
+            }
+        });
+        $.ajax({
+            type:"GET",
+            url:"/update?name=t",
+            dataType:"text",
+            success: function(v){
+                var valueName = now.getFullYear() + '/' + (now.getMonth() + 1) + '/' + now.getDate() + ' ' + (now.getHours() >= 10 ? now.getHours() : '0' + now.getHours()) + ':' + (now.getMinutes() >= 10 ? now.getMinutes() : '0' + now.getMinutes())+ ':' + (now.getSeconds() >= 10 ? now.getSeconds() : '0' + now.getSeconds());
+                var newData = {
+                    name: now.toString(),
+                    value: [
+                        valueName,
+                        Math.round(v)
+                    ]
+                };
+                dataT.push(newData);
+                if(dataT.length > num)
+                    dataT.shift();
+                myChart.setOption({
+                    series: [{
+                        data: data
+                    },{
+                        data:dataT
+                    }]
+                });
+            },
+            error:function(jqXHR){
+                alert("发生错误");
+            }
+        });
+
+        //
+
+    }
+    var data = [];
+    var dataT = [];
+
+    var num = 120;
+    option = {
+        tooltip: {
+            trigger: 'axis',
+            formatter: function(params) {
+                params = params[0];
+                var date = new Date(params.name);
+                return date.getHours() + ':' + date.getMinutes() + ' ' + date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' : ' + params.value[1];
+            },
+            axisPointer: {
+                animation: false
+            }
         },
         xAxis: {
-            data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
+            type: 'time',
+            splitLine: {
+                show: false
+            }
         },
-        yAxis: {},
+        yAxis: [{
+            name: '光强度',
+            type: 'value',
+            max: 1000,
+            min: 0,
+            boundaryGap: [0, '100%'],
+            splitLine: {
+                show: false
+            }
+        },{
+            name: '温度',
+            type: 'value',
+            max: 50,
+            min: 0,
+            boundaryGap: [0, '100%'],
+            splitLine: {
+                show: false
+            }
+        }],
         series: [{
-            name: '销量',
-            type: 'bar',
-            data: [5, 20, 36, 10, 10, 20]
+            name: '光强度数据',
+            type: 'line',
+            showSymbol: true,
+            yAxisIndex: 0,
+            hoverAnimation: true,
+            data: data
+        },{
+            name: '温度度数据',
+            type: 'line',
+            showSymbol: true,
+            yAxisIndex: 1,
+            hoverAnimation: true,
+            data: dataT
         }]
     };
-
-    // 使用刚指定的配置项和数据显示图表。
-    myChart.setOption(option);
+    setInterval(randomData, 2000);
+    if (option && typeof option === "object") {
+        myChart.setOption(option, true);
+    }
 </script>
 </body>
+
 </html>

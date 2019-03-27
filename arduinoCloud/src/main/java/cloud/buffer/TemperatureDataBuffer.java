@@ -6,16 +6,16 @@ import java.nio.DoubleBuffer;
 import java.util.Arrays;
 
 @Component
-public class LightDataBuffer {
+public class TemperatureDataBuffer {
 
     private DoubleBuffer buffer;
 
-    public LightDataBuffer() {
+    public TemperatureDataBuffer() {
         buffer = DoubleBuffer.allocate(20);
     }
 
     public void updateBuffer(double lightData){
-        buffer.put(1023 - lightData);
+        buffer.put(lightData);
         if(!buffer.hasRemaining()){
             buffer.clear();
         }
@@ -24,5 +24,4 @@ public class LightDataBuffer {
     public double getAverage(){
         return Arrays.stream(buffer.array()).sum()/ buffer.capacity();
     }
-
 }

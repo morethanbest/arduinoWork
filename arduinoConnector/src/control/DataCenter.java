@@ -1,6 +1,7 @@
 package control;
 
 
+import http.HttpClient;
 import mqtt.SendMqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import serial.SimpleRead;
@@ -32,12 +33,13 @@ public class DataCenter implements Runnable {
             if(!conQueue.isEmpty())
                 try {
                     String str = conQueue.take().toString();
-                    System.out.println("data center get:" + str);
-                    processLight(str);
-                    sendMqttMessage.publish(str, "light");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (MqttException e) {
+                    String[] data = str.split(",");
+                    System.out.println("data center get: light " + data[0] + " temperature " + data[1]);
+                    processLight(data[0]);
+                    HttpClient.doGet("http://localhost:8803/temperature?t=" + data[1]);
+                    sendMqttMessage.publish(data[0], "light");
+//                    sendMqttMessage.publish(data[1], "temperat");
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
         }
